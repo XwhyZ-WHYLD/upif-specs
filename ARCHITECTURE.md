@@ -2,7 +2,7 @@
 ## Normative Architectural Description
 
 **Document Type:** Normative  
-**Status:** Draft  
+**Status:** Final (v0.1)  
 **Applies To:** UPIF Specification v0.1  
 **Audience:** System architects, platform engineers, reviewers
 
@@ -10,15 +10,18 @@
 
 ## 1. Architectural Intent
 
-The Unified Prompt Intelligence Framework (UPIF) defines a **pre-inference governance architecture** for generative AI systems.
+The Unified Prompt Intelligence Framework (UPIF) defines a **pre-inference
+governance architecture** for generative AI systems.
 
 The architecture exists to ensure that:
+
 - Prompt intent is governed **before** execution
 - Authorship and accountability are preserved
 - Compliance evaluation is deterministic and auditable
 - Downstream AI systems receive only governed prompt artifacts
 
-This document specifies **architectural invariants**, **layer ordering constraints**, and **failure handling rules** for UPIF-compliant systems.
+This document specifies **architectural invariants**, **layer ordering
+constraints**, and **failure handling rules** for UPIF-compliant systems.
 
 ---
 
@@ -44,15 +47,31 @@ Every prompt artifact **MUST** be reconstructible via metadata and logs.
 
 ## 3. Layer Ordering Invariant (Critical)
 
-The following execution order is **MANDATORY**:
+The following execution order is **MANDATORY** for all UPIF-compliant systems:
 
+
+Each layer **MUST** complete successfully (or follow defined failure semantics)
+before control is passed to the next layer.
 
 An implementation **MUST NOT**:
+
 - Skip a layer
 - Reorder layers
-- Merge layers in a way that breaks logical sequencing
+- Execute layers in parallel where ordering semantics are affected
+- Merge layers in a manner that breaks logical sequencing
 
 Violating this order **INVALIDATES UPIF COMPLIANCE**.
+
+---
+
+### 3.1 Canonical Architecture Diagram
+
+**Figure 1** illustrates the normative logical architecture of UPIF and the
+mandatory ordering of layers defined in Section 3.
+
+The diagram is **conceptual and protocol-level**. It does not prescribe
+implementation details, infrastructure, transport mechanisms, cryptographic
+systems, or model internals.
 
 ---
 
@@ -77,12 +96,12 @@ Human collaboration and controlled authorship.
 ### 4.2 L2 — Cross-Modal Router
 
 **Primary Responsibility:**  
-Modality normalization and routing.
+Modality routing and normalization without semantic alteration.
 
 **Architectural Invariants:**
 - Governance metadata **MUST NOT** be stripped
 - Routing **MUST NOT** modify semantic intent
-- Modality translation **MUST** preserve attribution
+- Modality handling **MUST** preserve attribution
 
 **Failure Modes:**
 - Unsupported modality → prompt **MUST BE REJECTED**
@@ -93,16 +112,17 @@ Modality normalization and routing.
 ### 4.3 L3 — Personalization Engine
 
 **Primary Responsibility:**  
-Contextual adaptation within policy bounds.
+Contextual adaptation of prompt artifacts within explicitly permitted
+policy and governance constraints.
 
 **Architectural Invariants:**
-- Personalization **MUST** be reversible or explainable
-- No personalization may occur without traceability
+- Personalization **MUST** be explainable or reversible
 - Personalization **MUST NOT** override compliance rules
+- Personalization **MUST** be fully traceable
 
 **Failure Modes:**
 - Context ambiguity → personalization **MUST BE SKIPPED**
-- Policy violation risk → fallback to base prompt
+- Policy risk detected → fallback to base prompt
 
 ---
 
@@ -162,7 +182,8 @@ Controlled evolution of prompt structures.
 **Architectural Invariants:**
 - Feedback **MUST NOT** retroactively modify history
 - Feedback **MUST** be separable from execution logs
-- Feedback application **MUST** be optional
+- Feedback **MUST NOT** directly modify execution behavior without
+  passing through L1–L6 in a subsequent invocation
 
 **Failure Modes:**
 - Invalid feedback → discard without side effects
@@ -206,6 +227,7 @@ No trust boundary **MAY** be collapsed.
 UPIF **ENDS** at model invocation.
 
 Once a governed prompt artifact is transmitted:
+
 - UPIF assumes no control
 - Model behavior is explicitly out of scope
 - Output moderation is not defined here
@@ -223,12 +245,14 @@ The following designs **VIOLATE UPIF**:
 - Attribution after compliance checks
 - “Best effort” compliance evaluation
 - Silent fallback on critical failures
+- Infrastructure-bound interpretations of the protocol
 
 ---
 
 ## 9. Reference Implementation Guidance (Non-Normative)
 
 Implementations **SHOULD**:
+
 - Log each layer transition
 - Expose audit exports
 - Support dry-run compliance evaluation
@@ -247,9 +271,10 @@ It prioritizes:
 - Governance over autonomy
 
 This architecture defines a **new invariant layer** in the AI stack:
-the intent layer.
+the **intent layer**.
 
 ---
 
 **End of Architecture Document**
+
 
