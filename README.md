@@ -1,32 +1,77 @@
 # Unified Prompt Intelligence Framework (UPIF)
 
-**A Foundational Protocol for Ethical, Attributed, and Multi-Modal Generative AI Orchestration**
+**UPIF defines a missing layer in the generative AI stack:  
+governance of prompts _before_ model execution.**
 
-UPIF introduces a 7-layer system for governing the lifecycle of prompts in generative AI systems, focusing on:
+Where existing systems optimize outputs, UPIF governs intent.
 
-- Real-time co-prompting
-- Cross-modal routing
-- Personalized prompt adaptation
-- Attribution & authorship tracking
-- Safety & compliance filtering
-- Tone & brand governance
-- Feedback-driven prompt evolution
+---
 
-## 🔗 Citation
+## What UPIF Is
 
-Once published on Zenodo, please cite this work using the DOI:
-`https://doi.org/10.5281/zenodo.xxxxxxxx` *(placeholder)*
+UPIF is a **protocol-level specification** for treating prompts as
+first-class, auditable, and governed digital artifacts.
 
-## 📄 Whitepaper
+It formalizes how prompts are:
+- Authored collaboratively
+- Attributed to contributors
+- Evaluated for policy and compliance
+- Governed for tone and context
+- Refined prior to AI execution
 
-Download the full whitepaper [here](./whitepaper/UPIF_Whitepaper.pdf)
+UPIF operates **before inference**, independent of any specific model,
+vendor, or runtime.
 
-## 🛠 Layers and Specs
+---
 
-- Prompt Attribution JSON Schema (Layer 4)
-- Governance Packs (Layer 5-6)
-- Developer SDK Coming Soon
+## What UPIF Is Not
 
-## 🧾 License
+UPIF is **not**:
+- A prompt library
+- A model wrapper
+- A post-output moderation tool
+- A proprietary platform
 
-This protocol spec is shared under the Creative Commons Attribution 4.0 International (CC BY 4.0).
+UPIF does **not** generate content.  
+It governs the *inputs* that generate content.
+
+---
+
+## Why Prompt Governance Now
+
+As generative AI adoption accelerates, prompts have become:
+- A source of intellectual property
+- A compliance and regulatory liability
+- A vector for brand, safety, and attribution risk
+- A blocker to enterprise and institutional adoption
+
+Yet most AI systems still treat prompts as ephemeral strings.
+
+UPIF addresses this gap by introducing **governance-before-generation**:
+a structured, auditable lifecycle for prompts prior to model execution.
+
+---
+
+## Core Architecture
+
+UPIF defines a **seven-layer orchestration model**, each layer modular and
+independently adoptable:
+
+1. **Co-Prompting Interface**  
+   Multi-user collaborative prompt authoring with version control and roles.
+
+2. **Cross-Modal Router**  
+   Routes prompts across text, image, audio, video, and code modalities.
+
+3. **Personalization Engine**  
+   Context-aware adaptation using policy-aligned, non-sensitive signals.
+
+4. **Attribution Ledger**  
+   Records authorship, revision history, timestamps, and identifiers.
+
+5. **Compliance Firewall**  
+   Evaluates prompts against legal, ethical, and organizational rules
+   before execution.
+
+6. **Tone / Brand Governor**  
+   Enforces stylistic, academic, or brand-aligned communication
