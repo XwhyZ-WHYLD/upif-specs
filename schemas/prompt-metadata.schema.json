@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://upif.dev/schemas/prompt-metadata.schema.json",
+  "title": "UPIF Prompt Metadata Schema",
+  "description": "Normative metadata schema for prompt artifacts governed under the Unified Prompt Intelligence Framework (UPIF).",
+  "type": "object",
+  "required": [
+    "upif_version",
+    "prompt_id",
+    "created_at",
+    "authors",
+    "revision_history",
+    "modality",
+    "governance"
+  ],
+  "additionalProperties": false,
+
+  "properties": {
+    "upif_version": {
+      "type": "string",
+      "description": "UPIF specification version used to generate this prompt artifact.",
+      "pattern": "^v[0-9]+\\.[0-9]+(\\.[0-9]+)?$"
+    },
+
+    "prompt_id": {
+      "type": "string",
+      "description": "Globally unique identifier for the prompt artifact.",
+      "minLength": 8
+    },
+
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp indicating when the prompt artifact was first created."
+    },
+
+    "authors": {
+      "type": "array",
+      "description": "Ordered list of contributors to the prompt artifact.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["author_id", "role"],
+        "additionalProperties": false,
+        "properties": {
+          "author_id": {
+            "type": "string",
+            "description": "Stable identifier for the contributor."
+          },
+          "role": {
+            "type": "string",
+            "enum": ["creator", "editor", "reviewer"],
+            "description": "Role of the contributor in the prompt lifecycle."
+          }
+        }
+      }
+    },
+
+    "revision_history": {
+      "type": "array",
+      "description": "Immutable log of prompt revisions.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["revision_id", "timestamp", "author_id"],
+        "additionalProperties": false,
+        "properties": {
+          "revision_id": {
+            "type": "string",
+            "description": "Unique identifier for this revision."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time at which the revision was committed."
+          },
+          "author_id": {
+            "type": "string",
+            "description": "Identifier of the contributor responsible for the revision."
+          },
+          "hash": {
+            "type": "string",
+            "description": "Optional cryptographic hash of the prompt content at this revision."
+          }
+        }
+      }
+    },
+
+    "modality": {
+      "type": "string",
+      "description": "Target modality of the prompt.",
+      "enum": ["text", "image", "audio", "video", "code", "multimodal"]
+    },
+
+    "governance": {
+      "type": "object",
+      "description": "Governance controls applied to the prompt artifact.",
+      "required": ["compliance", "tone"],
+      "additionalProperties": false,
+
+      "properties": {
+        "compliance": {
+          "type": "object",
+          "description": "Compliance evaluation flags.",
+          "required": ["evaluated"],
+          "additionalProperties": false,
+          "properties": {
+            "evaluated": {
+              "type": "boolean",
+              "description": "Indicates whether compliance evaluation has been performed."
+            },
+            "policies_applied": {
+              "type": "array",
+              "description": "List of policy identifiers evaluated against this prompt.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "status": {
+              "type": "string",
+              "enum": ["approved", "rejected", "modified"],
+              "description": "Outcome of compliance evaluation."
+            }
+          }
+        },
+
+        "tone": {
+          "type": "object",
+          "description": "Tone and stylistic governance parameters.",
+          "required": ["profile"],
+          "additionalProperties": false,
+          "properties": {
+            "profile": {
+              "type": "string",
+              "description": "Tone profile identifier (e.g., academic, professional, brand-safe)."
+            },
+            "enforced": {
+              "type": "boolean",
+              "description": "Indicates whether tone enforcement was applied."
+            }
+          }
+        }
+      }
+    },
+
+    "feedback": {
+      "type":
