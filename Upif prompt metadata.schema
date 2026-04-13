@@ -1,0 +1,370 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/XwhyZ-WHYLD/upif-specs/blob/main/schemas/upif-prompt-metadata.schema.json",
+  "title": "UPIF Prompt Metadata Schema",
+  "description": "Schema for prompt metadata objects governed by the Unified Prompt Intelligence Framework (UPIF) v1.0. See https://doi.org/10.5281/zenodo.15242693",
+  "version": "1.0.0",
+  "type": "object",
+
+  "required": [
+    "prompt_id",
+    "author_uid",
+    "created_at",
+    "modality",
+    "revision_history"
+  ],
+
+  "properties": {
+
+    "prompt_id": {
+      "type": "string",
+      "description": "Globally unique identifier for this prompt. Recommended format: upif-{uuid-v4}.",
+      "pattern": "^upif-[a-zA-Z0-9\\-_]{4,}$",
+      "examples": ["upif-xyz123", "upif-a1b2c3d4-e5f6-7890-abcd-ef1234567890"]
+    },
+
+    "author_uid": {
+      "type": "string",
+      "description": "Unique identifier of the original prompt author.",
+      "examples": ["user-001", "orcid:0000-0002-1234-5678"]
+    },
+
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of prompt creation.",
+      "examples": ["2025-04-18T00:00:00Z"]
+    },
+
+    "modality": {
+      "type": "string",
+      "description": "Source modality of the prompt.",
+      "enum": ["text", "image", "audio", "video", "code", "multimodal"],
+      "examples": ["text"]
+    },
+
+    "intent_tags": {
+      "type": "array",
+      "description": "Optional semantic tags describing the prompt's intent.",
+      "items": {
+        "type": "string"
+      },
+      "examples": [["educational", "age-appropriate"], ["legal", "gdpr-sensitive"]]
+    },
+
+    "tone_profile": {
+      "type": "string",
+      "description": "Name of the active L6 tone/brand profile applied to this prompt.",
+      "examples": ["formal", "friendly_academic", "brand_xwhyz", "neutral"]
+    },
+
+    "compliance_flags": {
+      "type": "object",
+      "description": "L5 compliance evaluation results. All flags default to false if L5 was not applied.",
+      "properties": {
+        "gdpr_safe": {
+          "type": "boolean",
+          "description": "True if the prompt passed GDPR-relevant content evaluation."
+        },
+        "coppa_compliant": {
+          "type": "boolean",
+          "description": "True if the prompt passed COPPA age-appropriate content evaluation."
+        },
+        "hipaa_safe": {
+          "type": "boolean",
+          "description": "True if the prompt passed HIPAA health information evaluation."
+        },
+        "custom_flags": {
+          "type": "object",
+          "description": "Optional additional compliance flags from custom governance packs.",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "compliance_result": {
+      "type": "object",
+      "description": "L5 Compliance Firewall evaluation result for this prompt.",
+      "required": ["decision", "evaluated_at"],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": ["pass", "block"],
+          "description": "Whether the prompt passed or was blocked by the compliance firewall."
+        },
+        "triggered_rule": {
+          "type": ["string", "null"],
+          "description": "Identifier of the rule that triggered a block. Null if decision is pass.",
+          "examples": ["rule:gdpr-pii-detected", "rule:coppa-age-signal", null]
+        },
+        "block_reason": {
+          "type": ["string", "null"],
+          "description": "Human-readable reason for a block decision. Null if decision is pass."
+        },
+        "evaluated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of compliance evaluation."
+        },
+        "override": {
+          "type": "object",
+          "description": "Present only if an authorized role overrode a block decision.",
+          "required": ["overridden_by", "justification", "overridden_at"],
+          "properties": {
+            "overridden_by": {
+              "type": "string",
+              "description": "UID of the authorized user who overrode the block."
+            },
+            "justification": {
+              "type": "string",
+              "description": "Logged justification for the override."
+            },
+            "overridden_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "routing": {
+      "type": "object",
+      "description": "L2 Cross-Modal Router metadata. Present when the prompt was routed across modalities.",
+      "required": ["source_modality", "target_modality", "router_decision"],
+      "properties": {
+        "source_modality": {
+          "type": "string",
+          "enum": ["text", "image", "audio", "video", "code", "multimodal"]
+        },
+        "target_modality": {
+          "type": "string",
+          "enum": ["text", "image", "audio", "video", "code", "multimodal"]
+        },
+        "router_decision": {
+          "type": "string",
+          "enum": ["pass", "block", "transform"],
+          "description": "Routing outcome."
+        },
+        "transformation_log": {
+          "type": "array",
+          "description": "Ordered log of modality transitions applied to this prompt.",
+          "items": {
+            "type": "object",
+            "required": ["from", "to", "timestamp"],
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "timestamp": { "type": "string", "format": "date-time" }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "personalization": {
+      "type": "object",
+      "description": "L3 Personalization Engine metadata. Documents which signals influenced prompt adaptation.",
+      "properties": {
+        "applied": {
+          "type": "boolean",
+          "description": "Whether personalization was applied to this prompt."
+        },
+        "signals_used": {
+          "type": "array",
+          "description": "List of signal types used for adaptation. Must not include PII or sensitive data.",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["user_role", "session_context", "interaction_history"]]
+        },
+        "profile_id": {
+          "type": ["string", "null"],
+          "description": "Identifier of the user profile used for personalization."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "feedback": {
+      "type": "array",
+      "description": "L7 Feedback Loop records linked to this prompt.",
+      "items": {
+        "type": "object",
+        "required": ["feedback_uid", "contributor_uid", "signal", "timestamp"],
+        "properties": {
+          "feedback_uid": {
+            "type": "string",
+            "description": "Unique identifier for this feedback record."
+          },
+          "contributor_uid": {
+            "type": "string",
+            "description": "UID of the user or system providing feedback."
+          },
+          "signal": {
+            "type": "string",
+            "enum": ["accept", "reject", "revise", "flag", "escalate"],
+            "description": "Feedback signal type."
+          },
+          "note": {
+            "type": ["string", "null"],
+            "description": "Optional free-text annotation accompanying the feedback signal."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp of feedback submission."
+          },
+          "linked_revision": {
+            "type": "integer",
+            "description": "Revision number this feedback applies to."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+
+    "revision_history": {
+      "type": "array",
+      "description": "L4 Attribution Ledger — ordered, append-only revision history for this prompt. Required for Tier 2 and Tier 3 conformance.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["rev", "contributor_uid", "timestamp", "content_hash"],
+        "properties": {
+          "rev": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Revision number. Increments by 1 with each change. Immutable once recorded."
+          },
+          "contributor_uid": {
+            "type": "string",
+            "description": "UID of the contributor who authored this revision."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp of this revision."
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$",
+            "description": "SHA-256 hash of the prompt content at this revision. Format: sha256:{64-char-hex}.",
+            "examples": ["sha256:a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"]
+          },
+          "parent_revision": {
+            "type": ["integer", "null"],
+            "description": "Revision number of the parent revision. Null for the first revision.",
+            "examples": [null, 1, 2]
+          },
+          "change_summary": {
+            "type": ["string", "null"],
+            "description": "Optional short description of what changed in this revision."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+
+    "co_authors": {
+      "type": "array",
+      "description": "L1 Co-Prompting Interface — list of contributors beyond the original author.",
+      "items": {
+        "type": "object",
+        "required": ["uid", "role", "joined_at"],
+        "properties": {
+          "uid": {
+            "type": "string",
+            "description": "Unique identifier of the co-author."
+          },
+          "role": {
+            "type": "string",
+            "enum": ["author", "reviewer", "editor", "observer"],
+            "description": "Role of this contributor in the co-prompting session."
+          },
+          "joined_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp when this contributor joined the session."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+
+    "upif_version": {
+      "type": "string",
+      "description": "Version of the UPIF specification this metadata object conforms to.",
+      "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
+      "examples": ["1.0", "1.0.0"]
+    },
+
+    "layers_applied": {
+      "type": "array",
+      "description": "List of UPIF layers applied to this prompt. Used to determine conformance tier.",
+      "items": {
+        "type": "string",
+        "enum": ["L1", "L2", "L3", "L4", "L5", "L6", "L7"]
+      },
+      "uniqueItems": true,
+      "examples": [["L4", "L5"], ["L1", "L2", "L4", "L5", "L6"], ["L1", "L2", "L3", "L4", "L5", "L6", "L7"]]
+    }
+
+  },
+
+  "additionalProperties": false,
+
+  "examples": [
+    {
+      "prompt_id": "upif-xyz123",
+      "author_uid": "user-001",
+      "created_at": "2025-04-18T00:00:00Z",
+      "modality": "text",
+      "intent_tags": ["educational", "age-appropriate"],
+      "tone_profile": "friendly_academic",
+      "upif_version": "1.0",
+      "layers_applied": ["L1", "L4", "L5", "L6"],
+      "compliance_flags": {
+        "gdpr_safe": true,
+        "coppa_compliant": true,
+        "hipaa_safe": false
+      },
+      "compliance_result": {
+        "decision": "pass",
+        "triggered_rule": null,
+        "block_reason": null,
+        "evaluated_at": "2025-04-18T00:00:05Z"
+      },
+      "revision_history": [
+        {
+          "rev": 1,
+          "contributor_uid": "user-001",
+          "timestamp": "2025-04-18T00:00:00Z",
+          "content_hash": "sha256:a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3",
+          "parent_revision": null,
+          "change_summary": "Initial prompt draft"
+        },
+        {
+          "rev": 2,
+          "contributor_uid": "editor-002",
+          "timestamp": "2025-04-18T00:05:00Z",
+          "content_hash": "sha256:b3a8e0e1f9ab1201c7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0",
+          "parent_revision": 1,
+          "change_summary": "Tone adjustment by reviewer"
+        }
+      ],
+      "co_authors": [
+        {
+          "uid": "editor-002",
+          "role": "reviewer",
+          "joined_at": "2025-04-18T00:03:00Z"
+        }
+      ]
+    }
+  ]
+}
